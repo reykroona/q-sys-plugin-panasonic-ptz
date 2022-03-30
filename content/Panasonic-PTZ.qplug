@@ -547,13 +547,11 @@ if Controls then
 			end
 			if string.sub(d, 0, 2) == "p1" then
 				Controls["Powered"].Boolean = true
-				Controls["Powered"].Color = {0, 255, 0},
-
+				Controls["Powered"].Color = {0, 255, 0}
 			end
 			if string.sub(d, 0, 2) == "p3" then
 				Controls["Powered"].Boolean = true
-				Controls["Powered"].Color = {255, 165, 0},
-
+				Controls["Powered"].Color = {255, 165, 0}
 			end
 		end
 	end
