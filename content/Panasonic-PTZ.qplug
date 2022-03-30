@@ -2,9 +2,9 @@
 -- Id is a unique ID given to every plugin. While we typically use randomly generated UUID's, you can use anything here so long as it is unique
 
 PluginInfo = {
-	Name = "Panasonic~Camera (0.0.0.0-master)", -- The tilde here indicates folder structure in the Shematic Elements pane
-	Version = "0.0.0.0-master",
-	Id = "qsysc.panasonic.camera.visca.0.0.0.0-master", -- show this is just a unique id. Show some commented out 'fun' unique ids
+	Name = "Panasonic~Camera (0.0.0.1-master)", -- The tilde here indicates folder structure in the Shematic Elements pane
+	Version = "0.0.0.1-master",
+	Id = "qsysc.panasonic.camera.visca.0.0.0.1-master", -- show this is just a unique id. Show some commented out 'fun' unique ids
 	Description = "Plugin for control of an Panasonic Camera using the VISCA protocol",
 	ShowDebug = true
 }
@@ -41,7 +41,15 @@ function GetProperties()
 			Value = 6,
 			Min = 1,
 			Max = 100
+		},
+		{
+			Name = "PTZ and Zoom Speed",
+			Type = "integer",
+			Value = 50,
+			Min = 1,
+			Max = 100
 		}
+
 	}
 	return props
 end
@@ -64,6 +72,28 @@ function GetControls(props)
 			PinStyle = "Output",
 			Count = 1,
 			UserPin = true
+		},
+		{
+			Name = "Powered",
+			ControlType = "Indicator",
+			IndicatorType = "Led",
+			PinStyle = "Output",
+			Count = 1,
+			UserPin = true
+		},
+		{
+			Name = "PowerOn",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Input"
+		},
+		{
+			Name = "PowerOff",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Input"
 		},
 		{
 			Name = "ConnectionState",
@@ -179,7 +209,7 @@ function GetControlLayout(props)
 	local btn_size = {48, 24}
 	local title_size = {row_size * btn_size[1], btn_size[2]}
 	local txt_size = {2 * btn_size[1], btn_size[2]}
-	local status_groupbox_size = {title_size[1], 4 * btn_size[2]}
+	local status_groupbox_size = {title_size[1], 5 * btn_size[2]}
 	local ptz_groupbox_position = {0, title_size[2] + status_groupbox_size[2] + (0.5 * btn_size[2])}
 	local ptz_groupbox_size = {row_size * btn_size[1], 5 * btn_size[2]}
 	local presets_groupbox_position = {0, ptz_groupbox_position[2] + ptz_groupbox_size[2] + (0.5 * btn_size[2])}
@@ -242,6 +272,17 @@ function GetControlLayout(props)
 			HTextAlign = "Right",
 			Color = Colors.Black,
 			Position = {0, title_size[2] + (2.5 * btn_size[2])},
+			Size = txt_size
+		},
+		{
+			Type = "Text",
+			Text = "Powered:",
+			Font = "Roboto",
+			FontSize = 12,
+			FontStyle = "Bold",
+			HTextAlign = "Right",
+			Color = Colors.Black,
+			Position = {0, title_size[2] + (3.5 * btn_size[2])},
 			Size = txt_size
 		},
 		{
@@ -340,6 +381,32 @@ function GetControlLayout(props)
 		StrokeWidth = 0,
 		Position = {txt_size[1], title_size[2] + (2.5 * btn_size[2])},
 		Size = {2 * btn_size[1], btn_size[2]}
+	}
+	layout["Powered"] = {
+		PrettyName = "Powered",
+		Style = "Indicator",
+		Color = {0, 255, 0},
+		OffColor = {200, 0, 0},
+		UnlinkOffColor = true,
+		Margin = 4,
+		Position = {txt_size[1], title_size[2] + (3.5 * btn_size[2])},
+		Size = {btn_size[2], btn_size[2]}
+	}
+	layout["PowerOn"] = {
+		PrettyName = "Power On",
+		Legend = "Power On",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {txt_size[1] + (.5 * btn_size[1]), title_size[2] + (3.5 * btn_size[2])},
+		Size = btn_size
+	}
+	layout["PowerOff"] = {
+		PrettyName = "Power Off",
+		Legend = "Power Off",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {txt_size[1] + (1.5 * btn_size[1]), title_size[2] + (3.5 * btn_size[2])},
+		Size = btn_size
 	}
 	-- PTZ section
 	layout["PanTiltDrive-Up"] = {
@@ -461,6 +528,7 @@ if Controls then
 	function fnPoll()
 		-- Poll the Info
 		fnSend("QSV1")
+		fnSend("O")
 	end
 
 	-- Device Feedback
@@ -473,6 +541,19 @@ if Controls then
 			Controls["Online"].Boolean = true
 			if string.sub(d, 0, 3) == "qSV" then
 				Controls["FirmwareVersion"].String = string.sub(d, 5, -1)
+			end
+			if string.sub(d, 0, 2) == "p0" then
+				Controls["Powered"].Boolean = false
+			end
+			if string.sub(d, 0, 2) == "p1" then
+				Controls["Powered"].Boolean = true
+				Controls["Powered"].Color = {0, 255, 0},
+
+			end
+			if string.sub(d, 0, 2) == "p3" then
+				Controls["Powered"].Boolean = true
+				Controls["Powered"].Color = {255, 165, 0},
+
 			end
 		end
 	end
@@ -502,6 +583,10 @@ if Controls then
 
 	function goZoom(speed)
 		fnSend("Z" .. speed)
+	end
+
+	function goPower(power)
+		fnSend("O" .. power)
 	end
 
 	for k, v in pairs(Controls) do
@@ -552,6 +637,15 @@ if Controls then
 		zoom_speed = (string.format("%02d", math.floor((Controls["CAM_Zoom-Speed"].Value / 2.05) + 0.6)))
 		print(zoom_speed)
 	end
+	
+	Controls["PowerOn"].EventHandler = function()
+		goPower(1)
+	end
+	
+	Controls["PowerOff"].EventHandler = function()
+		goPower(0)
+	end
+
 	-- Startup
 	Controls["ConnectionState"].String = Properties["IP Address"].Value
 	Controls["CAM_Pan-Speed"].Value = (string.format("%02d", 50))
