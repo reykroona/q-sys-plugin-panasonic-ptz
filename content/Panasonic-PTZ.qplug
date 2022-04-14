@@ -96,6 +96,34 @@ function GetControls(props)
 			PinStyle = "Input"
 		},
 		{
+			Name = "AutoExpOn",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Input"
+		},
+		{
+			Name = "AutoExpOff",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Input"
+		},
+		{
+			Name = "AutoFocusOn",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Input"
+		},
+		{
+			Name = "AutoFocusOff",
+			ControlType = "Button",
+			ButtonType = "Momentary",
+			UserPin = true,
+			PinStyle = "Input"
+		},
+		{
 			Name = "ConnectionState",
 			ControlType = "Indicator",
 			IndicatorType = "Text",
@@ -209,7 +237,7 @@ function GetControlLayout(props)
 	local btn_size = {48, 24}
 	local title_size = {row_size * btn_size[1], btn_size[2]}
 	local txt_size = {2 * btn_size[1], btn_size[2]}
-	local status_groupbox_size = {title_size[1], 5 * btn_size[2]}
+	local status_groupbox_size = {title_size[1], 7 * btn_size[2]}
 	local ptz_groupbox_position = {0, title_size[2] + status_groupbox_size[2] + (0.5 * btn_size[2])}
 	local ptz_groupbox_size = {row_size * btn_size[1], 5 * btn_size[2]}
 	local presets_groupbox_position = {0, ptz_groupbox_position[2] + ptz_groupbox_size[2] + (0.5 * btn_size[2])}
@@ -283,6 +311,28 @@ function GetControlLayout(props)
 			HTextAlign = "Right",
 			Color = Colors.Black,
 			Position = {0, title_size[2] + (3.5 * btn_size[2])},
+			Size = txt_size
+		},
+		{
+			Type = "Text",
+			Text = "Auto Focus:",
+			Font = "Roboto",
+			FontSize = 12,
+			FontStyle = "Bold",
+			HTextAlign = "Right",
+			Color = Colors.Black,
+			Position = {0, title_size[2] + (4.5 * btn_size[2])},
+			Size = txt_size
+		},
+		{
+			Type = "Text",
+			Text = "Auto Exposure:",
+			Font = "Roboto",
+			FontSize = 12,
+			FontStyle = "Bold",
+			HTextAlign = "Right",
+			Color = Colors.Black,
+			Position = {0, title_size[2] + (5.5 * btn_size[2])},
 			Size = txt_size
 		},
 		{
@@ -406,6 +456,58 @@ function GetControlLayout(props)
 		Style = "Button",
 		ButtonStyle = "Momentary",
 		Position = {txt_size[1] + (1.5 * btn_size[1]), title_size[2] + (3.5 * btn_size[2])},
+		Size = btn_size
+	}
+	layout["AutoFocus"] = {
+		PrettyName = "Auto Focus",
+		Style = "Indicator",
+		Color = {0, 255, 0},
+		OffColor = {200, 0, 0},
+		UnlinkOffColor = true,
+		Margin = 4,
+		Position = {txt_size[1], title_size[2] + (4.5 * btn_size[2])},
+		Size = {btn_size[2], btn_size[2]}
+	}
+	layout["AutoFocusOn"] = {
+		PrettyName = "AF On",
+		Legend = "AF On",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {txt_size[1] + (0 * btn_size[1]), title_size[2] + (4.5 * btn_size[2])},
+		Size = btn_size
+	}
+	layout["AutoFocusOff"] = {
+		PrettyName = "AF Off",
+		Legend = "AF Off",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {txt_size[1] + (1 * btn_size[1]), title_size[2] + (4.5 * btn_size[2])},
+		Size = btn_size
+	}
+	layout["AutoExposure"] = {
+		PrettyName = "Auto Exposure",
+		Style = "Indicator",
+		Color = {0, 255, 0},
+		OffColor = {200, 0, 0},
+		UnlinkOffColor = true,
+		Margin = 4,
+		Position = {txt_size[1], title_size[2] + (5.5 * btn_size[2])},
+		Size = {btn_size[2], btn_size[2]}
+	}
+	layout["AutoExpOn"] = {
+		PrettyName = "AE On",
+		Legend = "AE On",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {txt_size[1], title_size[2] + (5.5 * btn_size[2])},
+		Size = btn_size
+	}
+	layout["AutoExpOff"] = {
+		PrettyName = "AE Off",
+		Legend = "AE Off",
+		Style = "Button",
+		ButtonStyle = "Momentary",
+		Position = {txt_size[1] + (1 * btn_size[1]), title_size[2] + (5.5 * btn_size[2])},
 		Size = btn_size
 	}
 	-- PTZ section
@@ -553,6 +655,22 @@ if Controls then
 				Controls["Powered"].Boolean = true
 				Controls["Powered"].Color = {255, 165, 0}
 			end
+			if string.sub(d, 0, 3) == "d30" then
+				Controls["AutoFocusOn"].Color = {128, 128, 128}
+				Controls["AutoFocusOff"].Color = {0, 255, 0}
+			end
+			if string.sub(d, 0, 3) == "d31" then
+				Controls["AutoFocusOff"].Color = {128, 128, 128}
+				Controls["AutoFocusOn"].Color = {255, 0, 0}
+			end
+			if string.sub(d, 0, 6) == "OGU80h" then
+				Controls["AutoExpOn"].Color = {128, 128, 128}
+				Controls["AutoExpOff"].Color = {255, 0, 0}
+			end
+			if string.sub(d, 0, 6) == "OGU11h" then
+				Controls["AutoExpOff"].Color = {128, 128, 128}
+				Controls["AutoExpOn"].Color = {0, 255, 0}
+			end
 		end
 	end
 
@@ -585,6 +703,18 @@ if Controls then
 
 	function goPower(power)
 		fnSend("O" .. power)
+	end
+
+	function goFocus(focus)
+		fnSend("D1" .. focus)
+	end
+
+	function goGain(exp)
+		fnSend("OGU" .. exp)
+	end
+
+	function goIris(exp)
+		fnSend("D3" .. exp)
 	end
 
 	for k, v in pairs(Controls) do
@@ -642,6 +772,24 @@ if Controls then
 	
 	Controls["PowerOff"].EventHandler = function()
 		goPower(0)
+	end
+
+	Controls["AutoFocusOn"].EventHandler = function()
+		goFocus(1)
+	end
+
+	Controls["AutoFocusOff"].EventHandler = function()
+		goFocus(0)
+	end
+
+	Controls["AutoExpOn"].EventHandler = function()
+		goGain("80h")
+		goIris(1)
+	end
+
+	Controls["AutoExpOff"].EventHandler = function()
+		goGain("11h")
+		goIris(0)
 	end
 
 	-- Startup
